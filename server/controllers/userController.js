@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
+import cloudinary from '../config/cloudinary.js'
+
 
 
 const generateToken = (res, id) => {
@@ -14,20 +16,27 @@ const generateToken = (res, id) => {
 }
 
 export const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, adminInviteToken } = req.body;
 
     try {
         const existingUser = await User.findOne({ email })
         if (existingUser) {
             return res.status(400).json({ message: "user already found" })
         }
+        let role='member';
+        if(adminInviteToken && adminInviteToken == process.env.ADMIN_INVITE_TOKEN){
+            role='admin';
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await User.create({ name, email, password: hashedPassword })
+        const user = await User.create({ name, email, password: hashedPassword,role })
         generateToken(res, user._id)
         return res.status(201).json({
             _id: user._id,
             name: user.name,
             email: user.email,
+            profilePic:user.profilePic,
+            role:user.role,
         })
     } catch (error) {
         console.log(error.message)
@@ -42,9 +51,11 @@ export const loginUser = async (req, res) => {
         if (user && (await bcrypt.compare(password, user.password))) {
             generateToken(res, user._id)
             return res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
+                 _id: user._id,
+            name: user.name,
+            email: user.email,
+            profilePic:user.profilePic,
+            role:user.role,
             })
         } else {
             return res.status(400).json({ message: 'Invalid email or password' })
@@ -102,4 +113,18 @@ export const updateUserProfile = async (req, res) => {
         res.status(500).json({ message: 'server error', error: error.message })
     }
 }
+// //get all users
+
+// export const getUsers= async (req, res) => {
+//     try {
+//         const users = await User.find({role:'member'}).select('-password')
+//         if (!users) {
+//             return res.status(404).json({ message: 'user not found' })
+//         }
+//         res.status(200).json(users)
+//     } catch (error) {
+//         console.log(error.message)
+//         res.status(500).json({ message: 'server error', error: error.message })
+//     }
+// }
 
