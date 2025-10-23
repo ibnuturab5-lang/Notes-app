@@ -34,7 +34,6 @@ export const getUserById= async (req, res) => {
     }
 }
 //delete user
-
 export const deleteUser= async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password')

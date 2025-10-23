@@ -7,7 +7,7 @@ const taskSchema= new mongoose.Schema({
    title:{type:String, required:true},
    description:{type:String},
    priority:{type:String, enum:['Low','High','Medium'], default:'Medium'},
-   status:{type:String, enum:['Pending','In Progress','Completed'], default:'Medium'},
+   status:{type:String, enum:['Pending','In Progress','Completed'], default:'Pending'},
    dueDate:{type:Date, required:true},
    assignedTo:[{type:mongoose.Schema.Types.ObjectId, ref:'User'}],
    createdBy:{type: mongoose.Schema.Types.ObjectId, ref:'User'},
