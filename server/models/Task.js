@@ -12,7 +12,7 @@ const taskSchema= new mongoose.Schema({
    assignedTo:[{type:mongoose.Schema.Types.ObjectId, ref:'User'}],
    createdBy:{type: mongoose.Schema.Types.ObjectId, ref:'User'},
    attachments:[{type:String}],
-   todoChecklist:[todoSchema],
+   todoChecklist:[todoSchema],  
    progress:{type:Number, default:0}
 },{timestamps:true});
 const Task =mongoose.model('Task', taskSchema)
