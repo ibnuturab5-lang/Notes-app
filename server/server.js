@@ -3,8 +3,17 @@ import cors from 'cors'
 import colors from 'colors'
 import 'dotenv/config'
 import mongoose from 'mongoose'
-const port =process.env.PORT
+import cookieParser from 'cookie-parser'
+const port =process.env.PORT || 5000
 const app =express()
+app.use(cors({
+    origin:process.env.FRONTEND_URL,
+    allowedHeaders:['Content-Type','Authorization','Cookie','X-Custom-Head'],
+    methods:['POST','GET','PUT','DELETE','PATCH','OPTIONS'],
+    credentials:true
+}))
+app.use(express.json())
+app.use(cookieParser())
 
 mongoose.connect(process.env.MONGO).then(()=>console.log('<<<<<< MongoDB Connected! >>>>>>'.cyan.bold)).catch((error)=>console.log(`Mongodb Error:`.red,error))
 app.get('/',(req,res)=>{
