@@ -29,7 +29,43 @@ export const getTasks=async (req,res) => {
         tasks =await Task.find({...filter, assignedTo:req.user._id}).populate('assignedTo', 'name email')
     }
 
+    //add comleted todoChecklist
+    tasks=await Promise.all(tasks.map(async (task) => {
+        const completedCount= task.todoChecklist.filter(item =>item.completed).length;
+        return {...task._doc, completedTodoCount:completedCount}
+    }));
+
+    //status summary counts
+    const allTasks = await Task.countDocuments(req.user.role === 'admin' ? {}: {assignedTo: req.user._id});
+    const pendingTasks = await Task.countDocuments({
+        ...filter, status:"Pending",
+        ...(req.user.role !== 'admin' && {assignedTo:req.user._id})
+    })
+    const inProgressTasks = await Task.countDocuments({
+        ...filter, status:"In Progress",
+        ...(req.user.role !== 'admin' && {assignedTo:req.user._id})
+    })
+    const completedTasks = await Task.countDocuments({
+        ...filter, status:"Completed",
+        ...(req.user.role !== 'admin' && {assignedTo:req.user._id})
+    })
+    res.json({
+        tasks, statusSummary:{
+            all:allTasks,pendingTasks,inProgressTasks,completedTasks
+        },
+    })
+
     } catch (error) {
         res.status(500).json({message:"server error", error:error.message})
+    }
+}
+//get Task by id
+export const getTaskById =async (req,res) => {
+    try {
+        const task =await Task.findById(req.params.id).populate("assignedTo", "name email");
+        if(!task) return res.status(404).json({message:"Task not found"});
+        res.json(task)
+    } catch (error) {
+       res.status(500).json({message:"server error", error:error.message}) 
     }
 }
